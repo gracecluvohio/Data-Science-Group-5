@@ -5,7 +5,14 @@ date: '2022-07-24'
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, cache = T, fig.width=8, fig.height=4)
+options(scipen = 0, digits = 3)  # controls base R output
+if(!require('pacman')) {
+  install.packages('pacman')
+}
+pacman::p_load(ggplot2, dplyr, tidyverse, gridExtra, ggrepel, plotly, skimr, tidytext) 
+# install a package if it does not exist already and put the package in the path (library)
+# dplyr, ggplot2,tidyr
 ```
  
 # Cleaning
@@ -35,4 +42,61 @@ bigdata <- merge(bigdata, data2021.2022, all = TRUE)
 
 ```{r sort}
 bigdata <- bigdata[order(bigdata$Squad),]
+```
+
+```{r graphs}
+sct_plot1 <- bigdata %>%
+  ggplot(aes(x = Age, y = Pts)) + 
+  # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
+  geom_point(color = "blue", size= 3, alpha = .8) + 
+  geom_text_repel(aes(label = Squad), size = 3) +
+  labs(title = "Premier League Team's Age vs Pts", 
+       x = "Age", 
+       y = "Point")
+sct_plot1
+
+sct_plot2 <- bigdata %>%
+  ggplot(aes(x = CrdY, y = Pts)) + 
+  # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
+  geom_point(color = "blue", size= 3, alpha = .8) + 
+  geom_text_repel(aes(label = Squad), size = 3) +
+  labs(title = "Premier League Team's Yellow Cards vs Pts", 
+       x = "Yellow Cards", 
+       y = "Point")
+sct_plot2
+
+sct_plot3 <- bigdata %>%
+  ggplot(aes(x = CrdR, y = Pts)) + 
+  # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
+  geom_point(color = "blue", size= 3, alpha = .8) + 
+  geom_text_repel(aes(label = Squad), size = 3) +
+  labs(title = "Premier League Team's Red Cards vs Pts", 
+       x = "Red Cards", 
+       y = "Point")
+sct_plot3
+
+sct_plot4 <- bigdata %>%
+  ggplot(aes(x = Save., y = Pts)) + 
+  # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
+  geom_point(color = "blue", size= 3, alpha = .8) + 
+  geom_text_repel(aes(label = Squad), size = 3) +
+  labs(title = "Premier League Team's Save Percentage vs Pts", 
+       x = "Save Percentage", 
+       y = "Point")
+sct_plot4
+
+sct_plot5 <- bigdata %>%
+  ggplot(aes(x = X..Pl, y = Pts)) + 
+  # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
+  geom_point(color = "blue", size= 3, alpha = .8) + 
+  geom_text_repel(aes(label = Squad), size = 3) +
+  labs(title = "Premier League Team's Players Used vs Pts", 
+       x = "Players Used", 
+       y = "Point")
+sct_plot5
+
+```
+
+
+``` {r adfs}
 ```
