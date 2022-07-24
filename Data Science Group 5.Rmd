@@ -1,0 +1,206 @@
+---
+title: "Data Science Group 5"
+author: 
+- "Jason Cheng"
+- "Grace Chia "
+- "Kathy Lin"
+- "Joshua Yang"
+date: '2022-07-22'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = T, fig.width=8, fig.height=4)
+options(scipen = 0, digits = 3)  # controls base R output
+if(!require('pacman')) {
+  install.packages('pacman')
+}
+pacman::p_load(ggplot2, dplyr, tidyverse, gridExtra, ggrepel, plotly, skimr, tidytext) 
+# install a package if it does not exist already and put the package in the path (library)
+# dplyr, ggplot2,tidyr
+```
+
+```{r echo = F, eval = F}
+# To properly generate PDF slides
+# you need to install latex as follows
+install.packages("tinytex")
+tinytex::install_tinytex()  # install TinyTeX
+```
+
+
+## EDA
+```{r EDA 21.22}
+data.21.22 <- read_csv("data/2021-2022 - Sheet1.csv")
+data.21.22 <- data.21.22 %>% select(-MP...3, -W...46, -D...47, -L...48, -MP...20, -MP...37, -`90s...23`, -Starts...38, -`90s...40`, -`90s...57`)
+data.21.22 <- data.21.22 %>% select(-W...4, -D...5, -L...6)
+data.21.22 <- data.21.22 %>% select(-Rk)
+data.21.22 <- data.21.22 %>% select(-GF, -GA...8)
+data.21.22 <- data.21.22 %>% select(-xG...12, -xGA, -xGD, -`xGD/90`)
+data.21.22 <- data.21.22 %>% select(-Starts...21)
+data.21.22 <- data.21.22 %>% select(-Min...22)
+data.21.22 <- data.21.22 %>% select(-Gls...24, -Ast...25, -`G-PK...26`, -PK...27, -PKatt...28, -CrdY, -CrdR)
+data.21.22 <- data.21.22 %>% select(-Gls...31, -Ast...32, -`G+A`, -`G-PK...34`)
+data.21.22 <- data.21.22 %>% select(-Min...39)
+data.21.22 <- data.21.22 %>% select(-GA...41)
+data.21.22 <- data.21.22 %>% select(-SoTA)
+data.21.22 <- data.21.22 %>% select(-CS)
+data.21.22 <- data.21.22 %>% select(-PKatt...51, -PKA, -PKsv, -PKm, -`Save%...55`)
+data.21.22 <- data.21.22 %>% select(-Gls...58)
+data.21.22 <- data.21.22 %>% select(-Sh, -SoT)
+data.21.22 <- data.21.22 %>% select(-xG...69, -npxG, -`npxG/Sh`, -`G-xG`, -`np:G-xG`)
+data.21.22 <- data.21.22 %>% select(-`# Pl...56`)
+data.21.22 <- data.21.22 %>% rename(Plteam = `# Pl...17`)
+data.21.22 <- data.21.22 %>% rename(PlGK = `# Pl...36`)
+data.21.22 <- data.21.22 %>% rename(Saveper = `Save%...45`)
+data.21.22 <- data.21.22 %>% rename(PKshooting = `PK...67`)
+data.21.22 <- data.21.22 %>% rename(PKattshooting = `PKatt...68`)
+colnames(data.21.22) <- paste(colnames(data.21.22),"21.22",sep="_")
+names(data.21.22)
+data.21.22 <- data.21.22 %>% rename(Squad = Squad_21.22)
+```
+
+```{r EDA 20.21}
+data.20.21 <- read_csv("data/2020-2021 - Sheet1.csv")
+names(data.20.21)
+data.20.21 <- data.20.21 %>% select(-MP...3, -W...46, -D...47, -L...48, -MP...20, -MP...37, -`90s...23`, -Starts...38, -`90s...40`, -`90s...57`)
+data.20.21 <- data.20.21 %>% select(-W...4, -D...5, -L...6)
+data.20.21 <- data.20.21 %>% select(-Rk)
+data.20.21 <- data.20.21 %>% select(-GF, -GA...8)
+data.20.21 <- data.20.21 %>% select(-xG...12, -xGA, -xGD, -`xGD/90`)
+data.20.21 <- data.20.21 %>% select(-Starts...21)
+data.20.21 <- data.20.21 %>% select(-Min...22)
+data.20.21 <- data.20.21 %>% select(-Gls...24, -Ast...25, -`G-PK...26`, -PK...27, -PKatt...28, -CrdY, -CrdR)
+data.20.21 <- data.20.21 %>% select(-Gls...31, -Ast...32, -`G+A`, -`G-PK...34`)
+data.20.21 <- data.20.21 %>% select(-Min...39)
+data.20.21 <- data.20.21 %>% select(-GA...41)
+data.20.21 <- data.20.21 %>% select(-SoTA)
+data.20.21 <- data.20.21 %>% select(-CS)
+data.20.21 <- data.20.21 %>% select(-PKatt...51, -PKA, -PKsv, -PKm, -`Save%...55`)
+data.20.21 <- data.20.21 %>% select(-Gls...58)
+data.20.21 <- data.20.21 %>% select(-Sh, -SoT)
+data.20.21 <- data.20.21 %>% select(-xG...69, -npxG, -`npxG/Sh`, -`G-xG`, -`np:G-xG`)
+data.20.21 <- data.20.21 %>% select(-`# Pl...56`)
+data.20.21 <- data.20.21 %>% rename(Plteam = `# Pl...17`)
+data.20.21 <- data.20.21 %>% rename(PlGK = `# Pl...36`)
+data.20.21 <- data.20.21 %>% rename(Saveper = `Save%...45`)
+data.20.21 <- data.20.21 %>% rename(PKshooting = `PK...67`)
+data.20.21 <- data.20.21 %>% rename(PKattshooting = `PKatt...68`)
+colnames(data.20.21) <- paste(colnames(data.20.21),"20.21",sep="_")
+names(data.20.21)
+data.20.21 <- data.20.21 %>% rename(Squad = Squad_20.21)
+```
+
+```{r EDA 19.20}
+data.19.20 <- read_csv("data/2019-2020 - Sheet1.csv")
+names(data.19.20)
+data.19.20 <- data.19.20 %>% select(-MP...3, -W...46, -D...47, -L...48, -MP...20, -MP...37, -`90s...23`, -Starts...38, -`90s...40`, -`90s...57`)
+data.19.20 <- data.19.20 %>% select(-W...4, -D...5, -L...6)
+data.19.20 <- data.19.20 %>% select(-Rk)
+data.19.20 <- data.19.20 %>% select(-GF, -GA...8)
+data.19.20 <- data.19.20 %>% select(-xG...12, -xGA, -xGD, -`xGD/90`)
+data.19.20 <- data.19.20 %>% select(-Starts...21)
+data.19.20 <- data.19.20 %>% select(-Min...22)
+data.19.20 <- data.19.20 %>% select(-Gls...24, -Ast...25, -`G-PK...26`, -PK...27, -PKatt...28, -CrdY, -CrdR)
+data.19.20 <- data.19.20 %>% select(-Gls...31, -Ast...32, -`G+A`, -`G-PK...34`)
+data.19.20 <- data.19.20 %>% select(-Min...39)
+data.19.20 <- data.19.20 %>% select(-GA...41)
+data.19.20 <- data.19.20 %>% select(-SoTA)
+data.19.20 <- data.19.20 %>% select(-CS)
+data.19.20 <- data.19.20 %>% select(-PKatt...51, -PKA, -PKsv, -PKm, -`Save%...55`)
+data.19.20 <- data.19.20 %>% select(-Gls...58)
+data.19.20 <- data.19.20 %>% select(-Sh, -SoT)
+data.19.20 <- data.19.20 %>% select(-xG...69, -npxG, -`npxG/Sh`, -`G-xG`, -`np:G-xG`)
+data.19.20 <- data.19.20 %>% select(-`# Pl...56`)
+data.19.20 <- data.19.20 %>% rename(Plteam = `# Pl...17`)
+data.19.20 <- data.19.20 %>% rename(PlGK = `# Pl...36`)
+data.19.20 <- data.19.20 %>% rename(Saveper = `Save%...45`)
+data.19.20 <- data.19.20 %>% rename(PKshooting = `PK...67`)
+data.19.20 <- data.19.20 %>% rename(PKattshooting = `PKatt...68`)
+colnames(data.19.20) <- paste(colnames(data.19.20),"19.20",sep="_")
+names(data.19.20)
+data.19.20 <- data.19.20 %>% rename(Squad = Squad_19.20)
+```
+
+
+```{r EDA 18.19}
+data.18.19 <- read_csv("data/2018-2019 - Sheet1.csv")
+names(data.18.19)
+data.18.19 <- data.18.19 %>% select(-MP...3, -W...46, -D...47, -L...48, -MP...20, -MP...37, -`90s...23`, -Starts...38, -`90s...40`, -`90s...57`)
+data.18.19 <- data.18.19 %>% select(-W...4, -D...5, -L...6)
+data.18.19 <- data.18.19 %>% select(-Rk)
+data.18.19 <- data.18.19 %>% select(-GF, -GA...8)
+data.18.19 <- data.18.19 %>% select(-xG...12, -xGA, -xGD, -`xGD/90`)
+data.18.19 <- data.18.19 %>% select(-Starts...21)
+data.18.19 <- data.18.19 %>% select(-Min...22)
+data.18.19 <- data.18.19 %>% select(-Gls...24, -Ast...25, -`G-PK...26`, -PK...27, -PKatt...28, -CrdY, -CrdR)
+data.18.19 <- data.18.19 %>% select(-Gls...31, -Ast...32, -`G+A`, -`G-PK...34`)
+data.18.19 <- data.18.19 %>% select(-Min...39)
+data.18.19 <- data.18.19 %>% select(-GA...41)
+data.18.19 <- data.18.19 %>% select(-SoTA)
+data.18.19 <- data.18.19 %>% select(-CS)
+data.18.19 <- data.18.19 %>% select(-PKatt...51, -PKA, -PKsv, -PKm, -`Save%...55`)
+data.18.19 <- data.18.19 %>% select(-Gls...58)
+data.18.19 <- data.18.19 %>% select(-Sh, -SoT)
+data.18.19 <- data.18.19 %>% select(-xG...69, -npxG, -`npxG/Sh`, -`G-xG`, -`np:G-xG`)
+data.18.19 <- data.18.19 %>% select(-`# Pl...56`)
+data.18.19 <- data.18.19 %>% rename(Plteam = `# Pl...17`)
+data.18.19 <- data.18.19 %>% rename(PlGK = `# Pl...36`)
+data.18.19 <- data.18.19 %>% rename(Saveper = `Save%...45`)
+data.18.19 <- data.18.19 %>% rename(PKshooting = `PK...67`)
+data.18.19 <- data.18.19 %>% rename(PKattshooting = `PKatt...68`)
+colnames(data.18.19) <- paste(colnames(data.18.19),"18.19",sep="_")
+names(data.18.19)
+data.18.19 <- data.18.19 %>% rename(Squad = Squad_18.19)
+```
+
+```{r EDA 17.18}
+data.17.18 <- read_csv("data/2017-2018 - Sheet1.csv")
+names(data.17.18)
+data.17.18 <- data.17.18 %>% select(-MP...3, -W...46, -D...47, -L...48, -MP...20, -MP...37, -`90s...23`, -Starts...38, -`90s...40`, -`90s...57`)
+data.17.18 <- data.17.18 %>% select(-W...4, -D...5, -L...6)
+data.17.18 <- data.17.18 %>% select(-Rk)
+data.17.18 <- data.17.18 %>% select(-GF, -GA...8)
+data.17.18 <- data.17.18 %>% select(-xG...12, -xGA, -xGD, -`xGD/90`)
+data.17.18 <- data.17.18 %>% select(-Starts...21)
+data.17.18 <- data.17.18 %>% select(-Min...22)
+data.17.18 <- data.17.18 %>% select(-Gls...24, -Ast...25, -`G-PK...26`, -PK...27, -PKatt...28, -CrdY, -CrdR)
+data.17.18 <- data.17.18 %>% select(-Gls...31, -Ast...32, -`G+A`, -`G-PK...34`)
+data.17.18 <- data.17.18 %>% select(-Min...39)
+data.17.18 <- data.17.18 %>% select(-GA...41)
+data.17.18 <- data.17.18 %>% select(-SoTA)
+data.17.18 <- data.17.18 %>% select(-CS)
+data.17.18 <- data.17.18 %>% select(-PKatt...51, -PKA, -PKsv, -PKm, -`Save%...55`)
+data.17.18 <- data.17.18 %>% select(-Gls...58)
+data.17.18 <- data.17.18 %>% select(-Sh, -SoT)
+data.17.18 <- data.17.18 %>% select(-xG...69, -npxG, -`npxG/Sh`, -`G-xG`, -`np:G-xG`)
+data.17.18 <- data.17.18 %>% select(-`# Pl...56`)
+data.17.18 <- data.17.18 %>% rename(Plteam = `# Pl...17`)
+data.17.18 <- data.17.18 %>% rename(PlGK = `# Pl...36`)
+data.17.18 <- data.17.18 %>% rename(Saveper = `Save%...45`)
+data.17.18 <- data.17.18 %>% rename(PKshooting = `PK...67`)
+data.17.18 <- data.17.18 %>% rename(PKattshooting = `PKatt...68`)
+colnames(data.17.18) <- paste(colnames(data.17.18),"17.18",sep="_")
+names(data.17.18)
+data.17.18 <- data.17.18 %>% rename(Squad = Squad_17.18)
+```
+
+```{r EDA join tables}
+data.17.22 <- data.21.22 %>% 
+  inner_join(data.20.21, by="Squad") %>%
+  inner_join(data.19.20, by="Squad") %>%
+  inner_join(data.18.19, by="Squad") %>%
+  inner_join(data.17.18, by="Squad")
+names(data.17.22)
+```
+```{r EDA pivot longer, eval = F}
+data.pivot <- data.17.22 %>%   # first create variable: payroll and year
+  select(team, p1998:p2014) %>% 
+  pivot_longer(cols = starts_with("p"), 
+               names_to = "year", 
+               names_prefix = "p",
+               values_to = "payroll")
+payroll[1:3, 1:3] # show a few rows
+View(payroll)
+View(datapay)
+?pivot_longer
+```
