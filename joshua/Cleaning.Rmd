@@ -44,7 +44,7 @@ bigdata <- merge(bigdata, data2021.2022, all = TRUE)
 bigdata <- bigdata[order(bigdata$Squad),]
 ```
 
-```{r graphs}
+```{r graphs 1}
 sct_plot1 <- bigdata %>%
   ggplot(aes(x = Age, y = Pts)) + 
   # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
@@ -54,7 +54,10 @@ sct_plot1 <- bigdata %>%
        x = "Age", 
        y = "Point")
 sct_plot1
+```
+This is a graph of Age vs Pts. There is likely no correlation. 
 
+```{r graphs 2}
 sct_plot2 <- bigdata %>%
   ggplot(aes(x = CrdY, y = Pts)) + 
   # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
@@ -64,7 +67,10 @@ sct_plot2 <- bigdata %>%
        x = "Yellow Cards", 
        y = "Point")
 sct_plot2
+```
+This is a graph of Yellow Cards vs Pts. There is a negative correlation. 
 
+```{r graphs 3}
 sct_plot3 <- bigdata %>%
   ggplot(aes(x = CrdR, y = Pts)) + 
   # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
@@ -74,7 +80,11 @@ sct_plot3 <- bigdata %>%
        x = "Red Cards", 
        y = "Point")
 sct_plot3
+```
+This is a graph of Red Cards vs Pts. There is likely no correlation. 
 
+
+```{r graphs 4}
 sct_plot4 <- bigdata %>%
   ggplot(aes(x = Save., y = Pts)) + 
   # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
@@ -84,7 +94,10 @@ sct_plot4 <- bigdata %>%
        x = "Save Percentage", 
        y = "Point")
 sct_plot4
+```
+This is a graph of Save Percentage vs Pts. There is a positive correlation. 
 
+```{r graphs 5}
 sct_plot5 <- bigdata %>%
   ggplot(aes(x = X..Pl, y = Pts)) + 
   # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
@@ -94,9 +107,6 @@ sct_plot5 <- bigdata %>%
        x = "Players Used", 
        y = "Point")
 sct_plot5
-
 ```
 
-
-``` {r adfs}
-```
+This is a graph of Players used vs Pts. There is likely no correlation.
