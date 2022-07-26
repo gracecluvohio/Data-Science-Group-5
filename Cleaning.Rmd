@@ -73,6 +73,7 @@ usefuldata <- rename(usefuldata, Players.Used = X..Pl, Save_Pct = Save., CS_Pct 
 usefuldata <- usefuldata[order(usefuldata$Squad),] #order by squad alphabetically
 str(usefuldata)
 str( c("Squad","Year","Pts","Attendance","Players.Used","Age","Poss","PK","PKatt","CrdY","CrdR","GA","SoTA","Saves","Save_Pct","CS","CS_Pct","Pkatt","PK","PKsv","PKm","Sh","SoT","SoT_Pct","Sh_Per_90","SoT_Per_90","G_Per_Sht","G_Per_SoT","Dist","FK","PK_A","PKatt_A","Squad.Year"))
+
 ```
 
 ```{r graphs}
@@ -121,21 +122,39 @@ sct_plot5 <- usefuldata %>%
   # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
   geom_point(color = "blue", size= 3, alpha = .8) + 
   geom_text_repel(aes(label = Squad.Year), size = 3) +
+  geom_smooth(method="lm",formula = 'y~x', se = F, color = "red") +
   labs(title = "Premier League Team's Players Used vs Pts", 
        x = "Players Used", 
        y = "Point")
 sct_plot5
 
-pts_goals <- lm(Pts ~ GF, data = usefuldata)
+pts_goals <- lm(Pts ~ GA, data = usefuldata)
 
-ggplot(usefuldata, aes(x=GF,y=Pts)) + 
+ggplot(usefuldata, aes(x=GA,y=Pts)) + 
   geom_point() +
   geom_smooth(method="lm",formula = 'y~x', se = F, color = "red")
 
+usefuldata <- usefuldata %>% select(-GA)
+
 summary(pts_goals)
 
+pts_goals <- lm(Pts ~ Attendance, data = usefuldata)
+ggplot(usefuldata, aes(x=Attendance,y=Pts)) + 
+  geom_point() +
+  geom_smooth(method="lm",formula = 'y~x', se = F, color = "red")
 
+gsub('character', '', my_string)
+usefuldata$Attendance <- as.numeric(gsub(",", "", usefuldata$Attendance))
+summary(usefuldata$Attendance)
+write.csv(usefuldata, "data/usefuldata.csv", row.names = F)
+```
 
+```{r LASSO}
+usefuldata <- read.csv("data/usefuldata.csv", header=T, na.string=c("", "?"))
+dim(usefuldata)
+names(usefuldata)
+fit.data.lm <- lm(Pts~., usefuldata) # dump everything in the model
+summary(fit.data.lm) 
 ```
 
 
