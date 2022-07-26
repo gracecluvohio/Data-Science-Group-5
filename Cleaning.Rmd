@@ -1,0 +1,139 @@
+---
+title: "Cleaning"
+output: html_document
+date: '2022-07-24'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = T, fig.width=8, fig.height=4)
+options(scipen = 0, digits = 3)  # controls base R output
+if(!require('pacman')) {
+  install.packages('pacman')
+}
+pacman::p_load(ggplot2, dplyr, tidyverse, gridExtra, ggrepel, plotly, skimr, tidytext, data.table) 
+# install a package if it does not exist already and put the package in the path (library)
+# dplyr, ggplot2,tidyr
+```
+
+# Dataset 
+ 
+The online database Fbref includes a large database of soccer states in the English Premier League. Our group compiled every year's stats of the league table, standard stats table, goalkeeping stats, and shooting stats from the 2000-2001 season to 2021-2022 season
+
+# Cleaning
+
+```{r read in files}
+
+for(year in 2000:2021) { #for loop through every year
+  suffix <- paste0(year,".",(year+1)) #name changes based on each year
+  suffix2 <- paste0(year,"-",(year+1))
+  filepath <- paste0("data/",suffix2," - Sheet1.csv") 
+  varname <- paste0("data", suffix)
+  assign(varname, read.csv(filepath)) #assign read csv file to variable name
+}
+```
+
+```{r add new columns}
+#add year column and team year 
+for(year in 2000:2021) { #for loop through every year
+  suffix <- paste0(year,".",(year+1)) #name changes based on each year
+  varname <- paste0("data", suffix)
+  reference <- get(varname) #reference to actual variable with the same string name
+  assign(varname, data.frame(Year = rep(year, 20), reference)) #assign read csv file to variable name
+  reference <- get(varname)
+  assign(varname, reference %>% mutate(reference, "Squad.Year" = paste(reference$Squad, reference$Year)))
+}
+
+```
+
+```{r combine yearly datasets}
+bigdata <- data2000.2001
+for(year in 2001:2021) { #for loop through every year
+  suffix <- paste0(year,".",(year+1)) #name changes based on each year
+  varname <- paste0("data", suffix)
+  reference <- get(varname) #reference to actual variable with the same string name
+  bigdata <- merge(bigdata, reference, all = TRUE)
+}
+```
+
+```{r clean columns}
+bigdata <- bigdata[ , !names(bigdata) %in% c("Pts.Mp","Mp.1","Starts","Min","X90s","MP.2","Starts.1","Min.1","X90s.1","X..Pl.2","X90s.2","Gls.2","Sh.90","SoT.90","Pts.MP","PKatt.2","Save..1","Top.Team.Scorer","Goalkeeper","G.PK.1","G.A.Pk","PK.1","GA.1")] #useless / repetitive info
+bigdata <- bigdata[ , !names(bigdata) %in% c("Gls.1","Ast.1","G.Pk.1","W.1","D.1","L.1","PKatt.1","GA90","MP.1","Squad.")] #more repetitve stats
+bigdata <- bigdata[ , !names(bigdata) %in% c("X..Pl.1")] #data with too narrow ranges to be useful
+bigdata <- bigdata[ , !names(bigdata) %in% c("xGD.90","xG.1","npxG","npxG.Sh","G.xG","np.G.xG","xG","xGA","xGD")] #expected stats arent useful
+bigdata <- bigdata[ , !names(bigdata) %in% c("Gls","Ast","G.Pk","G.A","G.A.Pk","W","D","L","Rk","GF","GA","GD")] #too directly correlated info (goals and assists obviously)
+
+bigdata <- rename(bigdata, Players.Used = X..Pl, Save_Pct = Save., CS_Pct = CS., SoT_Pct = SoT., G_Per_Sht = G.Sh, G_Per_SoT = G.SoT) #better names
+```
+
+
+
+```{r sort table}
+bigdata <- bigdata[order(bigdata$Squad),] #order by squad alphabetically
+```
+
+```{r graphs}
+sct_plot1 <- bigdata %>%
+  ggplot(aes(x = Age, y = Pts)) + 
+  # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
+  geom_point(color = "blue", size= 3, alpha = .8) + 
+  geom_text_repel(aes(label = Squad.Year), size = 3) +
+  labs(title = "Premier League Team's Age vs Pts", 
+       x = "Age", 
+       y = "Point")
+sct_plot1
+
+sct_plot2 <- bigdata %>%
+  ggplot(aes(x = CrdY, y = Pts)) + 
+  # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
+  geom_point(color = "blue", size= 3, alpha = .8) + 
+  geom_text_repel(aes(label = Squad.Year), size = 3) +
+  labs(title = "Premier League Team's Yellow Cards vs Pts", 
+       x = "Yellow Cards", 
+       y = "Point")
+sct_plot2
+
+sct_plot3 <- bigdata %>%
+  ggplot(aes(x = CrdR, y = Pts)) + 
+  # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
+  geom_point(color = "blue", size= 3, alpha = .8) + 
+  geom_text_repel(aes(label = Squad.Year), size = 3) +
+  labs(title = "Premier League Team's Red Cards vs Pts", 
+       x = "Red Cards", 
+       y = "Point")
+sct_plot3
+
+sct_plot4 <- bigdata %>%
+  ggplot(aes(x = Save_Pct, y = Pts)) + 
+  # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
+  geom_point(color = "blue", size= 3, alpha = .8) + 
+  geom_text_repel(aes(label = Squad.Year), size = 3) +
+  labs(title = "Premier League Team's Save Percentage vs Pts", 
+       x = "Save Percentage", 
+       y = "Point")
+sct_plot4
+
+sct_plot5 <- bigdata %>%
+  ggplot(aes(x = Players.Used, y = Pts)) + 
+  # geometric options: color, size, shape, alpha: transparency (range: 0 to 1)
+  geom_point(color = "blue", size= 3, alpha = .8) + 
+  geom_text_repel(aes(label = Squad.Year), size = 3) +
+  labs(title = "Premier League Team's Players Used vs Pts", 
+       x = "Players Used", 
+       y = "Point")
+sct_plot5
+
+pts_goals <- lm(Pts ~ GF, data = bigdata)
+
+ggplot(bigdata, aes(x=GF,y=Pts)) + 
+  geom_point() +
+  geom_smooth(method="lm",formula = 'y~x', se = F, color = "red")
+
+summary(pts_goals)
+
+
+
+```
+
+
+``` {r adfs}
+```
