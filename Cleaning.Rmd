@@ -143,9 +143,31 @@ ggplot(usefuldata, aes(x=Attendance,y=Pts)) +
   geom_point() +
   geom_smooth(method="lm",formula = 'y~x', se = F, color = "red")
 
-gsub('character', '', my_string)
 usefuldata$Attendance <- as.numeric(gsub(",", "", usefuldata$Attendance))
 summary(usefuldata$Attendance)
+usefuldata$Poss <- as.numeric(gsub(",", "", usefuldata$Poss))
+summary(usefuldata$Poss)
+usefuldata$CrdY <- as.numeric(gsub(",", "", usefuldata$CrdY))
+summary(usefuldata$CrdY)
+usefuldata$CrdR <- as.numeric(gsub(",", "", usefuldata$CrdR))
+summary(usefuldata$CrdR)
+usefuldata$PKatt_A <- as.numeric(gsub(",", "", usefuldata$PKatt_A))
+summary(usefuldata$PKatt_A)
+usefuldata$Sh <- as.numeric(gsub(",", "", usefuldata$Sh))
+summary(usefuldata$Sh)
+usefuldata$SoT_Pct <- as.numeric(gsub(",", "", usefuldata$SoT_Pct))
+summary(usefuldata$SoT_Pct)
+usefuldata$Sh_Per_90 <- as.numeric(gsub(",", "", usefuldata$Sh_Per_90))
+summary(usefuldata$Sh_Per_90)
+usefuldata$G_Per_Sht <- as.numeric(gsub(",", "", usefuldata$G_Per_Sht))
+summary(usefuldata$G_Per_Sht)
+usefuldata$Dist <- as.numeric(gsub(",", "", usefuldata$Dist))
+summary(usefuldata$Dist)
+usefuldata$PKsv <- as.numeric(gsub(",", "", usefuldata$PKsv))
+summary(usefuldata$PKsv)
+usefuldata$PKm <- as.numeric(gsub(",", "", usefuldata$PKm))
+summary(usefuldata$PKm)
+
 write.csv(usefuldata, "data/usefuldata.csv", row.names = F)
 ```
 
@@ -153,7 +175,7 @@ write.csv(usefuldata, "data/usefuldata.csv", row.names = F)
 usefuldata <- read.csv("data/usefuldata.csv", header=T, na.string=c("", "?"))
 dim(usefuldata)
 names(usefuldata)
-fit.data.lm <- lm(Pts~., usefuldata) # dump everything in the model
+fit.data.lm <- lm(Pts~. -Squad.Year -Squad, usefuldata) # dump everything in the model
 summary(fit.data.lm) 
 ```
 
