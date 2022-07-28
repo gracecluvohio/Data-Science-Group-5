@@ -1,0 +1,66 @@
+---
+title: "Linear Model"
+output: html_document
+date: '2022-07-27'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = T, fig.width=8, fig.height=4)
+options(scipen = 0, digits = 3)  # controls base R output
+if(!require('pacman')) {
+  install.packages('pacman')
+}
+pacman::p_load(ggplot2, dplyr, tidyverse, gridExtra, ggrepel, plotly, skimr, tidytext, data.table, car, tidyr) 
+# install a package if it does not exist already and put the package in the path (library)
+# dplyr, ggplot2,tidyr
+```
+
+## Linear Model
+
+```{r Linear Model}
+usefuldata <- read.csv("data/usefuldata.csv")
+dim(usefuldata)
+names(usefuldata)
+fit.data.lm <- lm(Pts~. -Squad.Year -Squad, usefuldata) # dump everything in the model
+summary(fit.data.lm) 
+Anova(fit.data.lm)
+```
+
+## Lasso
+```{r Linear Model}
+library(glmnet)
+usefuldata <- usefuldata %>% select(-Sh, -SoT_Pct, -Sh_Per_90, -G_Per_Sht, -PKsv, -PKm, -Squad, -Poss)
+usefuldata <- usefuldata %>% select(-Dist)
+usefuldata <- usefuldata %>% select(-PKatt_A)
+usefuldata <- usefuldata %>% select(-PK_A)
+write.csv(usefuldata, "data/usefuldata.csv", row.names = F)
+usefuldata_compl <- usefuldata[complete.cases(usefuldata), ]
+
+y <- usefuldata_compl$Pts # extract Y
+x.fl <- model.matrix(Pts~., data=usefuldata_compl)[,-1]
+dim(x.fl)
+colnames(x.fl)
+
+
+fit <- glmnet(x.fl, y, alpha=1) # alpha =1 corresponding to LASSO solutions
+names(fit) # to see the possible output  
+fit$lambda 
+```
+
+```{r Selecting a lambda}
+fit.cv <- cv.glmnet(x.fl, y, alpha=1, nfolds=10)
+plot(fit.cv)
+coef.1se <- coef(fit.cv, s="lambda.1se")  
+coef.1se <- coef.1se[which(coef.1se !=0),] 
+coef.1se
+rownames(as.matrix(coef.1se))
+fit.new <- lm(Pts~PK+CS+G_Per_SoT+Attendance+SoTA+CS_Pct+Players.Used+Save_Pct+SoT, usefuldata_compl)
+summary(fit.new)
+fit.new1 <- update(fit.new, .~. - CS)
+summary(fit.new1)
+```
+
+```{r model diagnoses}
+plot(fit.new1, 1)
+plot(fit.new1, 2)
+```
