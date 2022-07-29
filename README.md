@@ -4,13 +4,13 @@
 
 Cleaning.Rmd combines the data from the /data folder in the project and is the EDA.
 
-Linear Model.Rmd is further EDA
+Linear Model.Rmd is further EDA and includes both linear modelling and LASSO
 
 For the neuralnetwork, EPL_NN_Keras(Failed).rmd  is the first attempt at the NN which failed. This code uses the matches.csv and also combines more data from the /matchdata folder.
 
 The code also exported the neuralnuet_data.csv (although it is commented out in the code at the moment).
 
-EPL_NN_H2O(WORKING).Rmd is the second attempt at NN which works although has a lot of room for improvement. It uses neuralnuet_data.csv, which is cleaned in the previous file from EPL_NN_Keras(Failed).rmd (the first NN attempt .rmd)
+EPL_NN_H2O(WORKING).Rmd is the second attempt at NN which works although has a lot of room for improvement. It uses neuralnuet_data.csv, which is cleaned in the previous file from EPL_NN_Keras(Failed).rmd.
 
 
 ## Files
