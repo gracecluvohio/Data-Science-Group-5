@@ -1,0 +1,147 @@
+---
+title: "NN With H2O R Library"
+output: html_document
+date: "2022-07-29"
+---
+
+# Machine Learning EPL (H2O)
+
+The general purpose of this .rmd file is to use a neural network to predict match winner (exlcuding draws) in a soccer match in the English Premier League. All predictors are variables able to be calculated before a match starts such as win streak, average goals in past games, days since last match, etc. 
+
+#Pre-resiquites
+
+Import Library H2O Note: H2O requires a JRE (Java installed) from java.com before running. 
+Also add other packages in case of need like dlpyr
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!require('h2o')) {
+  install.packages('h2o')
+}
+library(h2o)
+if(!require('pacman')) {
+  install.packages('pacman')
+}
+pacman::p_load(keras, ggplot2, glmnet, RColorBrewer, wordcloud, neuralnet, latex2exp, data.table, dplyr, tidyverse, gridExtra, ggrepel, plotly, skimr, tidytext,tensorflow) 
+```
+
+#Read Data 
+
+data.csv is a cleaned data set ready for NN from EPL_ML.rmd (keras attempt at NN)
+
+```{r echo =T}
+m.data <- read.csv("NeuralNet_Data.csv")
+h2o.init() #
+```
+Start h2o instance
+
+```{r echo =T}
+h2o.init() #
+```
+
+# Data Prepartation
+
+Convert ha_winner to a factor (as it only has 0 and 1 as factor outputs)
+Also split training and test data
+```{r echo=T}
+m.data$ha_winner <- as.factor(m.data$ha_winner)
+tr <- m.data[-(3814:4814),]
+test <- m.data[(3814:4814),]
+```
+
+# Train Neural Network
+
+Create h2o instances of test and training data
+```{r echo=T}
+tr_h2o <- as.h2o(tr)
+test_h2o <- as.h2o(test)
+# Take a look at the contents of the H2OFrame
+h2o.describe(tr_h2o)
+```
+
+Create Deep Learning NN Model
+```{r echo=T}
+h2o_nn <- h2o.deeplearning(x = 2:37, #36 cleaned predictors
+                           y = 1,  #1 outcome
+                           training_frame = tr_h2o,
+                           nfolds = 5, 
+                           standardize = TRUE,
+                           activation = "Rectifier",
+                           hidden = c(5,200), #2 hidden layers
+                           seed = 10723, #seed doesnt make a difference
+                           export_weights_and_biases = TRUE)
+```
+
+Store weights and biases of the 3 layers as data frame
+```{r echo =T}
+w1 <-as.data.frame( h2o.weights(h2o_nn,matrix_id=1))
+w2 <- as.data.frame(h2o.weights(h2o_nn,2))
+w3 <- as.data.frame(h2o.weights(h2o_nn,3))
+b1 <- as.data.frame(h2o.biases(h2o_nn,1))
+b2 <- as.data.frame(h2o.biases(h2o_nn,2))
+b3 <-as.data.frame(h2o.biases(h2o_nn,3))
+
+# Look at performance of model
+h2o.performance(h2o_nn)
+```
+
+Predict match results based on testing dataset into dataframe
+```{r echo =T}
+# Use model to predict classes
+h2o_predictions <- h2o.predict(object = h2o_nn,  newdata = test_h2o)
+
+# Explore predictions
+h2o_predictions <- as.data.frame(h2o_predictions)
+
+```
+
+```{r echo =T}
+# Shutdown H2O instance
+h2o.shutdown()
+```
+
+Calculate percent of match results that were predicted correct by our Neural Network model
+
+```{r echo =T}
+actual <- data.frame(yhat=h2o_predictions$predict, ydata=m.data[3814:4814,1])
+actual <- actual %>% mutate(correct = if_else(ydata == yhat,1,0))#createa column for whether itis correct
+actual <- actual[1:981,] #remove na values
+v <- sum(actual$correct)
+percent_pred <- sum(actual$correct)/(981) #percent correct
+percent_pred
+
+View(actual)
+```
+
+Calculate percent of match results that were predicted correct by OddsPortal Betting Odds
+
+```{r echo=T}
+sum <-sum( as.numeric(as.character(m.data$ha_winner[1:4794])))
+
+act.data <- read.csv("matches.csv")
+act.data<-act.data[!(act.data$winner=="DRAW"),] #remove draws for now, converting this to binary classification problem
+
+act.data <- act.data %>% 
+  mutate(bet_winner = (if_else(h_odd >= a_odd,0,1))) #string to binary format
+act.data <- act.data %>% 
+  mutate(bet_correct = (if_else(ha_winner == bet_winner,1,0))) #string to binary format
+
+
+act.data <- act.data %>%
+  select(bet_correct, everything())
+act.data <- act.data %>%
+  select(ha_winner, everything())
+act.data <- act.data %>%
+  select(bet_winner, everything())
+act.data <- act.data %>%
+  select(a_odd, everything())
+act.data <- act.data %>%
+  select(h_odd, everything())
+
+bet.data <- act.data[,c(1:8)]
+View(bet.data)
+
+bets_sum <- sum(act.data$bet_winner)
+bets_perc <- bets_sum / nrow(act.data)
+bets_perc
+```
