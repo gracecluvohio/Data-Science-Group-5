@@ -13,7 +13,7 @@ The code also exported the neuralnuet_data.csv (although it is commented out in 
 EPL_NN_H2O(WORKING).Rmd is the second attempt at NN which works although has a lot of room for improvement. It uses neuralnuet_data.csv, which is cleaned in the previous file from EPL_NN_Keras(Failed).rmd.
 
 
-## Files
+## Sources
 **Multiple Linear Regression**  
 | ITEMS  | LINK |
 | ------------- | ------------- |
